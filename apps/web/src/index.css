@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Luxury palette as RGB channels so Tailwind opacity modifiers work. */
+:root {
+  --obsidian: 12 10 9; --onyx: 28 25 23; --graphite: 41 37 36; --stone: 68 64 60;
+  --ivory: 250 250 249; --pearl: 245 245 244; --linen: 231 229 228; --paper: 255 255 255;
+  --ink: 12 10 9; --muted: 87 83 78; --muted-dark: 168 162 158;
+  --gold: 201 162 75; --gold-deep: 161 98 7; --gold-soft: 233 217 176;
+  --danger: 180 35 24; --danger-tint: 251 236 234; --warning: 181 71 8; --watch: 148 98 0; --ok: 47 111 78;
+}
+
+@layer base {
+  html { background: rgb(var(--ivory)); color: rgb(var(--ink)); -webkit-font-smoothing: antialiased; }
+  body { @apply font-sans text-base bg-ivory text-ink; font-feature-settings: 'kern', 'cv11'; }
+  h1, h2, h3 { @apply font-medium; text-wrap: balance; }
+  .font-serif { letter-spacing: -0.015em; }
+  :focus-visible { outline: 2px solid rgb(var(--gold)); outline-offset: 2px; }
+  ::selection { background: rgb(var(--gold-soft)); }
+}
+
+@layer components {
+  .num { font-variant-numeric: tabular-nums; }
+  /* The "luxury label": small, spaced capitals. */
+  .eyebrow { @apply text-[11px] font-medium uppercase tracking-[0.14em] text-muted; }
+  .hairline { @apply border-gold/40; }
+  .btn { @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-md border px-5 py-2 text-sm font-medium tracking-wide transition-colors duration-200 ease-out disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-ink { @apply btn border-obsidian bg-obsidian text-ivory hover:bg-graphite; }
+  .btn-gold { @apply btn border-gold bg-gold text-obsidian hover:bg-gold-soft; }
+  .btn-line { @apply btn border-linen bg-paper text-ink hover:border-ink; }
+  .btn-quiet { @apply inline-flex items-center gap-1 rounded px-1 text-sm font-medium text-gold-deep underline decoration-gold/50 underline-offset-4 hover:decoration-gold-deep; }
+  .field-input { @apply min-h-[44px] w-full rounded-md border border-linen bg-paper px-3 py-2 text-base text-ink placeholder:text-muted/70 focus:border-gold-deep focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-gold/30; }
+  .card { @apply rounded-lg border border-linen bg-paper shadow-soft; }
+  /* Key cards carry a thin gold rule along the top. */
+  .card-gold { @apply card relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gold; }
+  /* A sheet of paper on the desk: square corners, one soft shadow. */
+  .sheet { background: rgb(var(--paper)); box-shadow: 0 1px 0 rgb(var(--obsidian) / .06), 0 18px 40px -20px rgb(var(--obsidian) / .35); }
+  .ledger-row { @apply border-b border-linen; }
+  .skeleton { @apply animate-pulse rounded bg-linen/70; }
+}
+
+@keyframes scan { from { top: 0% } to { top: 100% } }
+@keyframes draw { from { stroke-dashoffset: var(--len) } to { stroke-dashoffset: 0 } }
+@keyframes stamp-in { from { opacity: 0; transform: rotate(-8deg) scale(1.25) } to { opacity: 1; transform: rotate(-8deg) scale(1) } }
+@keyframes pulse-box { 0%, 100% { box-shadow: 0 0 0 0 rgb(var(--gold) / 0) } 50% { box-shadow: 0 0 0 6px rgb(var(--gold) / .35) } }
+@keyframes rise { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
+
+.scan-line { animation: scan 2.4s cubic-bezier(.45,0,.55,1) infinite alternate; }
+.leader { stroke-dasharray: var(--len); animation: draw .35s ease-out both; }
+.stamp-in { animation: stamp-in .3s cubic-bezier(.2,.9,.3,1.2) both; }
+.pulse { animation: pulse-box .8s ease-in-out 2; }
+.rise { animation: rise .28s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+  .scan-line { display: none; }
+}

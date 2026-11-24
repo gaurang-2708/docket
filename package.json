@@ -1,0 +1,38 @@
+{
+  "name": "docket",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "services/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "db:init": "bash scripts/db.sh init",
+    "db:start": "bash scripts/db.sh start",
+    "db:stop": "bash scripts/db.sh stop",
+    "db:migrate": "npm run migrate -w @docket/db",
+    "db:seed": "npm run seed -w @docket/db",
+    "setup": "npm run db:migrate && npm run db:seed",
+    "dev": "concurrently -k -n auth,gateway,worker,web -c magenta,blue,yellow,green \"npm run dev -w @docket/auth\" \"npm run dev -w @docket/gateway\" \"npm run dev -w @docket/worker\" \"npm run dev -w @docket/web\"",
+    "test": "vitest run",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "samples": "node scripts/make-samples.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.5",
+    "@types/node": "^22.10.0"
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true,
+    "esbuild@0.28.2": true,
+    "@prisma/client@6.19.3": true,
+    "@prisma/engines@6.19.3": true,
+    "prisma@6.19.3": true,
+    "sharp@0.33.5": true,
+    "tesseract.js": false
+  }
+}

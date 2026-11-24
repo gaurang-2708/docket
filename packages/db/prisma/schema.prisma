@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  REVIEWER
+  ADMIN
+}
+
+enum DocStatus {
+  UPLOADED
+  READING
+  EXTRACTING
+  VALIDATING
+  READY
+  APPROVED
+  FAILED
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  name         String
+  passwordHash String
+  role         Role
+  createdAt    DateTime     @default(now())
+  uploads      Document[]   @relation("uploader")
+  approvals    Document[]   @relation("approver")
+  audit        AuditEvent[]
+}
+
+model Document {
+  id            String       @id @default(cuid())
+  filename      String
+  mimeType      String
+  originalPath  String
+  imagePath     String
+  width         Int
+  height        Int
+  status        DocStatus    @default(UPLOADED)
+  ocrProgress   Int          @default(0)
+  ocrText       String?
+  ocrConfidence Float?
+  words         Json?
+  lineItems     Json?
+  checks        Json?
+  error         String?
+  uploadedBy    User         @relation("uploader", fields: [uploadedById], references: [id])
+  uploadedById  String
+  approvedBy    User?        @relation("approver", fields: [approvedById], references: [id])
+  approvedById  String?
+  approvedAt    DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  fields        Field[]
+  audit         AuditEvent[]
+  stages        StageRun[]
+  jobs          Job[]
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Field {
+  id            String   @id @default(cuid())
+  document      Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId    String
+  key           String
+  value         String?
+  originalValue String?
+  confidence    Float
+  bbox          Json?
+  edited        Boolean  @default(false)
+
+  @@unique([documentId, key])
+}
+
+model AuditEvent {
+  id         String   @id @default(cuid())
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId String
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  action     String
+  fieldKey   String?
+  fromValue  String?
+  toValue    String?
+  createdAt  DateTime @default(now())
+
+  @@index([documentId, createdAt])
+}
+
+model Job {
+  id         String    @id @default(cuid())
+  document   Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId String
+  status     String    @default("queued")
+  attempts   Int       @default(0)
+  lockedAt   DateTime?
+  lockedBy   String?
+  lastError  String?
+  createdAt  DateTime  @default(now())
+  finishedAt DateTime?
+
+  @@index([status, createdAt])
+}
+
+model StageRun {
+  id         String    @id @default(cuid())
+  document   Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId String
+  stage      String
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  ok         Boolean?
+  error      String?
+
+  @@index([stage, startedAt])
+}
+
+model ServiceLog {
+  id        BigInt   @id @default(autoincrement())
+  ts        DateTime @default(now())
+  service   String
+  level     String
+  msg       String
+  data      Json?
+
+  @@index([ts])
+}
